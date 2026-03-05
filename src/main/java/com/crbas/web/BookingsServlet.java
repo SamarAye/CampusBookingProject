@@ -22,15 +22,10 @@ public class BookingsServlet extends HttpServlet {
         resp.getWriter().println("<h1>Bookings</h1>");
 
         try (Connection con = DBConnection.getConnection()) {
-            // Debug: confirm which DB Tomcat is using
-            resp.getWriter().println("<p>DB URL: " + con.getMetaData().getURL() + "</p>");
-            resp.getWriter().println("<p>DB User: " + con.getMetaData().getUserName() + "</p>");
-            resp.getWriter().println("<p>DB Name: " + con.getCatalog() + "</p>");
 
             BookingDAO dao = new BookingDAO();
             List<String> rows = dao.getAllBookingsSummary();
 
-            resp.getWriter().println("<p>Rows found: " + rows.size() + "</p>");
             resp.getWriter().println("<ul>");
             for (String b : rows) {
                 resp.getWriter().println("<li>" + b + "</li>");
