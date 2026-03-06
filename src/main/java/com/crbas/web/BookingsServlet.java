@@ -1,14 +1,12 @@
 package com.crbas.web;
 
 import com.crbas.dao.BookingDAO;
-import com.crbas.dao.DBConnection;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.List;
 
 @WebServlet("/bookings")
@@ -21,8 +19,7 @@ public class BookingsServlet extends HttpServlet {
         resp.setContentType("text/html;charset=UTF-8");
         resp.getWriter().println("<h1>Bookings</h1>");
 
-        try (Connection con = DBConnection.getConnection()) {
-
+        try {
             BookingDAO dao = new BookingDAO();
             List<String> rows = dao.getAllBookingsSummary();
 

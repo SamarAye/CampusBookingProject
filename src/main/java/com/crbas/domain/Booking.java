@@ -1,23 +1,14 @@
-/*
- * Booking lifecycle managed using the State Pattern.
- * Each state controls allowed transitions (Requested -> Approved/Denied/Cancelled).
- * Status string remains synchronized with the database column.
- */
 package com.crbas.domain;
 
 public class Booking {
     private int bookingId;
     private int userId;
     private int resourceId;
-
-    // Matches DB: Bookings.status VARCHAR(20)
     private String status;
-
-    // State Pattern
     private BookingState state;
 
     public Booking() {
-        setState(new RequestedState()); // default lifecycle start
+        setState(new RequestedState());
     }
 
     public Booking(int userId, int resourceId) {
@@ -58,17 +49,11 @@ public class Booking {
         return status;
     }
 
-    // Optional helper (nice for DAO)
-    public String getStatusName() {
-        return status;
-    }
-
     public void setState(BookingState state) {
         this.state = state;
-        this.status = state.getName(); // keep DB status in sync
+        this.status = state.getName();
     }
 
-    // Actions delegate to current state
     public void approve() {
         state.approve(this);
     }
