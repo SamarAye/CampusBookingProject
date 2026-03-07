@@ -13,9 +13,9 @@ public class DBConnection {
 
     public static Connection getConnection() throws SQLException {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // force driver load
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            throw new SQLException("MySQL driver not found. Put mysql-connector-j jar in WEB-INF/lib or Tomcat/lib.", e);
+            throw new SQLException("MySQL driver not found.", e);
         }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
