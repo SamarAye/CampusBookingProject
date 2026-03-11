@@ -1,3 +1,6 @@
+CREATE DATABASE campusbooking;
+USE campusbooking;
+
 -- Database Schema for Campus Resource Booking
 -- Data Layer (Tier 3)
 
