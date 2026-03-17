@@ -1,30 +1,60 @@
 # Campus Resource Booking & Approval System  
-**CST8288 – Group Project 2 (Initial Implementation / MVP)**
+CST8288 – Group Project 3 (Second Iteration)
 
 ## Overview
-This repository contains the first iteration of a secure, web-based booking system designed for campus resource management. The project follows a three-tier architecture:
+This repository contains the second iteration of a web-based booking system designed for campus resource management. The project follows a three-tier architecture:
 
-1. **Presentation Layer:** Java Servlets (Web Browser)
-2. **Business Logic Layer:** Java classes implementing design patterns (Builder, State, Strategy, etc.)
-3. **Data Layer:** JDBC connection to a centralized database
+- **Presentation Layer:** Java Servlets (Web Browser)  
+- **Business Logic Layer:** Java classes implementing design patterns (Builder, State, Strategy, etc.)  
+- **Data Layer:** JDBC connection to a MySQL database  
 
-## Key MVP Features
-- **User Authentication:** Login and registration with roles (Student, Staff, Manager)
-- **Resource Browsing:** Search and view campus equipment and rooms
-- **Booking Workflow:** Submit booking requests with conflict validation to prevent double-booking
-- **Approvals:** Management interface for approving or denying requests
+## Key Features
+- Booking Submission: Users can submit booking requests through a web form  
+- View Bookings: Display all bookings stored in the database  
+- Role-Based Logic: Approval behavior varies based on user role (Student, Staff, Manager)  
+- State Management: Booking lifecycle handled using State Pattern (Requested, Approved, Denied, Cancelled)  
+- Design Patterns: Implementation includes Builder, State, and Strategy patterns  
+- Database Integration: Uses JDBC to connect and interact with MySQL  
 
 ## Setup Instructions
-1. **Clone the repository**
-   - Use `git clone` to download the source code.
-2. **Import into Eclipse**
-   - Import the project into Eclipse as a **Dynamic Web Project**.
-3. **Set up the database**
-   - Run `database.sql` (DDL file) to create the required tables.
-4. **Deploy**
-   - Deploy to **Tomcat 9** using the exported `.war` file.
+
+### Clone the repository
+Use git clone to download the source code.
+
+### Import into Eclipse
+- Import the project into Eclipse as a Dynamic Web Project.
+
+### Set up the database
+Run database.sql (DDL file) to create the database, tables, and insert sample data.
+
+### Configure database connection
+Open DBConnection.java and update the database credentials if needed.
+
+- Example:  
+  URL: jdbc:mysql://localhost:3306/campusbooking  
+  Username: root  
+  Password: your_password  
+
+- Note  
+  Make sure the username and password match your local MySQL setup.  
+  If the connection fails, double check your database name, username, and password.  
+
+### Deploy
+Run the project on Tomcat 9 or deploy using the exported .war file.
+
+### Access the application
+Submit booking: http://localhost:8081/CampusBookingProject/submit  
+View bookings: http://localhost:8081/CampusBookingProject/bookings  
+
+- Note  
+  If your Tomcat server is running on a different port, replace 8081 with your port number (for example 8080).  
+
+## Notes
+- The database must be created before running the application.  
+- Sample data is included to avoid foreign key errors.  
+- If issues occur, try cleaning the project and restarting Tomcat.  
 
 ## Team Members
-- **Samar**
-- **Travis Lepage**
-- **Nabil Aitbelkas**
+- Samar  
+- Travis Lepage  
+- Nabil Aitbelkas 

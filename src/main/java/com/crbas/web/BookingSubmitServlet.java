@@ -1,10 +1,7 @@
 package com.crbas.web;
 
-import com.crbas.dao.BookingDAO;
-import com.crbas.domain.ApprovalStrategyFactory;
-import com.crbas.domain.Booking;
-import com.crbas.domain.BookingApprovalStrategy;
-import com.crbas.domain.BookingBuilder;
+import com.crbas.service.BookingService;
+import com.crbas.service.BookingSubmissionResult;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,6 +14,8 @@ import java.io.PrintWriter;
 public class BookingSubmitServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+
+    private BookingService bookingService = new BookingService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -51,28 +50,18 @@ public class BookingSubmitServlet extends HttpServlet {
             int resourceId = Integer.parseInt(req.getParameter("resourceId").trim());
             String role = req.getParameter("role");
 
-            Booking booking = new BookingBuilder()
-                    .userId(userId)
-                    .resourceId(resourceId)
-                    .status("Requested")
-                    .build();
-
-            BookingDAO dao = new BookingDAO();
-            boolean resourceAvailable = dao.isResourceAvailable(resourceId);
-            BookingApprovalStrategy strategy = ApprovalStrategyFactory.forRole(role);
-            boolean autoApproved = strategy.approve(booking, resourceAvailable);
-            int generatedId = dao.saveBooking(booking);
+            BookingSubmissionResult result = bookingService.submitBookingWithResult(userId, resourceId, role);
 
             out.println("<!DOCTYPE html><html><head><title>Booking Result</title></head><body>");
             out.println("<h2>Booking Submitted</h2>");
-            if (generatedId > 0) {
-                out.println("<p><strong>booking_id:</strong> " + generatedId + "</p>");
-                out.println("<p><strong>user_id:</strong> " + userId + "</p>");
-                out.println("<p><strong>resource_id:</strong> " + resourceId + "</p>");
-                out.println("<p><strong>role:</strong> " + role + "</p>");
-                out.println("<p><strong>resource available:</strong> " + resourceAvailable + "</p>");
-                out.println("<p><strong>auto-approved:</strong> " + autoApproved + "</p>");
-                out.println("<p><strong>final status:</strong> <b>" + booking.getStatus() + "</b></p>");
+            if (result.getGeneratedId() > 0) {
+                out.println("<p><strong>booking_id:</strong> " + result.getGeneratedId() + "</p>");
+                out.println("<p><strong>user_id:</strong> " + result.getUserId() + "</p>");
+                out.println("<p><strong>resource_id:</strong> " + result.getResourceId() + "</p>");
+                out.println("<p><strong>role:</strong> " + result.getRole() + "</p>");
+                out.println("<p><strong>resource available:</strong> " + result.isResourceAvailable() + "</p>");
+                out.println("<p><strong>auto-approved:</strong> " + result.isAutoApproved() + "</p>");
+                out.println("<p><strong>final status:</strong> <b>" + result.getFinalStatus() + "</b></p>");
             } else {
                 out.println("<p style='color:red'>Failed to save booking. Check server logs.</p>");
             }

@@ -1,19 +1,23 @@
 package com.crbas.dao;
 
-import java.sql.Connection;
+import com.crbas.domain.Booking;
+
+import java.util.List;
 
 public class DBTest {
+
     public static void main(String[] args) {
-        try (Connection con = DBConnection.getConnection()) {
-            System.out.println("DB connected OK: " + (con != null && !con.isClosed()));
+        BookingDAO dao = new BookingDAO();
 
-            BookingDAO dao = new BookingDAO();
-            for (String b : dao.getAllBookingsSummary()) {
-                System.out.println(b);
-            }
+        List<Booking> bookings = dao.getAllBookings();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (Booking booking : bookings) {
+            System.out.println(
+                    "booking_id=" + booking.getBookingId()
+                            + ", user_id=" + booking.getUserId()
+                            + ", resource_id=" + booking.getResourceId()
+                            + ", status=" + booking.getStatus()
+            );
         }
     }
 }

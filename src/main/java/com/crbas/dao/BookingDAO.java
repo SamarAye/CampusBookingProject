@@ -1,6 +1,8 @@
 package com.crbas.dao;
 
 import com.crbas.domain.Booking;
+import com.crbas.domain.BookingStateFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,6 +28,7 @@ public class BookingDAO {
                     return keys.getInt(1);
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -35,22 +38,29 @@ public class BookingDAO {
 
     public boolean isResourceAvailable(int resourceId) {
         String sql = "SELECT is_available FROM Resources WHERE resource_id = ?";
+
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, resourceId);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getBoolean("is_available");
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return false;
     }
 
-    public List<String> getAllBookingsSummary() {
-        List<String> results = new ArrayList<>();
+    public List<Booking> getAllBookings() {
+
+        List<Booking> bookings = new ArrayList<>();
+
         String sql = "SELECT booking_id, user_id, resource_id, status FROM Bookings";
 
         try (Connection con = DBConnection.getConnection();
@@ -58,17 +68,23 @@ public class BookingDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                results.add(
-                    "booking_id=" + rs.getInt("booking_id") +
-                    ", user_id=" + rs.getInt("user_id") +
-                    ", resource_id=" + rs.getInt("resource_id") +
-                    ", status=" + rs.getString("status")
+
+                Booking booking = new Booking();
+
+                booking.setBookingId(rs.getInt("booking_id"));
+                booking.setUserId(rs.getInt("user_id"));
+                booking.setResourceId(rs.getInt("resource_id"));
+                booking.setState(
+                        BookingStateFactory.fromStatus(rs.getString("status"))
                 );
+
+                bookings.add(booking);
             }
+
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error retrieving bookings", e);
         }
 
-        return results;
+        return bookings;
     }
 }
