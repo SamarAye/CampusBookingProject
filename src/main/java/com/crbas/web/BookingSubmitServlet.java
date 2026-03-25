@@ -15,45 +15,90 @@ public class BookingSubmitServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private BookingService bookingService = new BookingService();
+    private final BookingService bookingService = new BookingService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
 
-        out.println("<!DOCTYPE html><html><head><title>Submit Booking</title></head><body>");
-        out.println("<h2>Submit a Booking</h2>");
-        out.println("<form method='POST' action='submit'>");
-        out.println("<label>User ID: <input type='number' name='userId' required /></label><br/><br/>");
-        out.println("<label>Resource ID: <input type='number' name='resourceId' required /></label><br/><br/>");
-        out.println("<label>Role:");
-        out.println("<select name='role'>");
-        out.println("<option value='Student'>Student</option>");
-        out.println("<option value='Staff'>Staff</option>");
-        out.println("<option value='Manager'>Manager</option>");
-        out.println("</select>");
-        out.println("</label><br/><br/>");
-        out.println("<button type='submit'>Submit Booking</button>");
-        out.println("</form>");
-        out.println("<br/><a href='bookings'>View all bookings</a>");
-        out.println("</body></html>");
+        String contextPath = req.getContextPath();
+
+        try (PrintWriter out = resp.getWriter()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html><head><title>Submit Booking</title></head><body>");
+            out.println("<h2>Submit a Booking</h2>");
+            out.println("<form method='POST' action='" + contextPath + "/submit'>");
+
+            out.println("<label>User ID: <input type='number' name='userId' min='1' required /></label><br/><br/>");
+            out.println("<label>Resource ID: <input type='number' name='resourceId' min='1' required /></label><br/><br/>");
+
+            out.println("<label>Role: ");
+            out.println("<select name='role' required>");
+            out.println("<option value='Student'>Student</option>");
+            out.println("<option value='Staff'>Staff</option>");
+            out.println("<option value='Manager'>Manager</option>");
+            out.println("</select>");
+            out.println("</label><br/><br/>");
+
+            out.println("<button type='submit'>Submit Booking</button>");
+            out.println("</form>");
+
+            out.println("<br/><a href='" + contextPath + "/bookings'>View all bookings</a>");
+            out.println("</body></html>");
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
 
-        try {
-            int userId = Integer.parseInt(req.getParameter("userId").trim());
-            int resourceId = Integer.parseInt(req.getParameter("resourceId").trim());
+        String contextPath = req.getContextPath();
+
+        try (PrintWriter out = resp.getWriter()) {
+            String userIdParam = req.getParameter("userId");
+            String resourceIdParam = req.getParameter("resourceId");
             String role = req.getParameter("role");
 
-            BookingSubmissionResult result = bookingService.submitBookingWithResult(userId, resourceId, role);
+            if (userIdParam == null || userIdParam.trim().isEmpty()
+                    || resourceIdParam == null || resourceIdParam.trim().isEmpty()
+                    || role == null || role.trim().isEmpty()) {
 
-            out.println("<!DOCTYPE html><html><head><title>Booking Result</title></head><body>");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.println("<!DOCTYPE html><html><head><title>Error</title></head><body>");
+                out.println("<p style='color:red'>Missing required input values.</p>");
+                out.println("<br/><a href='" + contextPath + "/submit'>Go back</a>");
+                out.println("</body></html>");
+                return;
+            }
+
+            int userId = Integer.parseInt(userIdParam.trim());
+            int resourceId = Integer.parseInt(resourceIdParam.trim());
+
+            if (userId <= 0 || resourceId <= 0) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.println("<!DOCTYPE html><html><head><title>Error</title></head><body>");
+                out.println("<p style='color:red'>User ID and Resource ID must be positive integers.</p>");
+                out.println("<br/><a href='" + contextPath + "/submit'>Go back</a>");
+                out.println("</body></html>");
+                return;
+            }
+
+            if (!role.equals("Student") && !role.equals("Staff") && !role.equals("Manager")) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.println("<!DOCTYPE html><html><head><title>Error</title></head><body>");
+                out.println("<p style='color:red'>Invalid role selected.</p>");
+                out.println("<br/><a href='" + contextPath + "/submit'>Go back</a>");
+                out.println("</body></html>");
+                return;
+            }
+
+            BookingSubmissionResult result =
+                    bookingService.submitBookingWithResult(userId, resourceId, role);
+
+            out.println("<!DOCTYPE html>");
+            out.println("<html><head><title>Booking Result</title></head><body>");
             out.println("<h2>Booking Submitted</h2>");
+
             if (result.getGeneratedId() > 0) {
                 out.println("<p><strong>booking_id:</strong> " + result.getGeneratedId() + "</p>");
                 out.println("<p><strong>user_id:</strong> " + result.getUserId() + "</p>");
@@ -63,18 +108,32 @@ public class BookingSubmitServlet extends HttpServlet {
                 out.println("<p><strong>auto-approved:</strong> " + result.isAutoApproved() + "</p>");
                 out.println("<p><strong>final status:</strong> <b>" + result.getFinalStatus() + "</b></p>");
             } else {
-                out.println("<p style='color:red'>Failed to save booking. Check server logs.</p>");
+                out.println("<p style='color:red'>Failed to save booking. Please verify that the user ID and resource ID exist in the database.</p>");
             }
-            out.println("<br/><a href='submit'>Submit another</a> | <a href='bookings'>View all bookings</a>");
+
+            out.println("<br/><a href='" + contextPath + "/submit'>Submit another</a> | "
+                    + "<a href='" + contextPath + "/bookings'>View all bookings</a>");
             out.println("</body></html>");
 
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.println("<p style='color:red'>Invalid input: userId and resourceId must be integers.</p>");
+            try (PrintWriter out = resp.getWriter()) {
+                out.println("<!DOCTYPE html><html><head><title>Error</title></head><body>");
+                out.println("<p style='color:red'>Invalid input: userId and resourceId must be integers.</p>");
+                out.println("<br/><a href='" + req.getContextPath() + "/submit'>Go back</a>");
+                out.println("</body></html>");
+            }
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.println("<pre>ERROR: " + e + "</pre>");
             e.printStackTrace();
+
+            try (PrintWriter out = resp.getWriter()) {
+                out.println("<!DOCTYPE html><html><head><title>Error</title></head><body>");
+                out.println("<p style='color:red'>An unexpected error occurred while processing the booking.</p>");
+                out.println("<pre>" + e.getMessage() + "</pre>");
+                out.println("<br/><a href='" + req.getContextPath() + "/submit'>Go back</a>");
+                out.println("</body></html>");
+            }
         }
     }
 }

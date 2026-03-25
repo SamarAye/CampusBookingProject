@@ -4,6 +4,10 @@ public class StudentApprovalStrategy implements BookingApprovalStrategy {
 
     @Override
     public boolean approve(Booking booking, boolean resourceAvailable) {
-        return false;
+        if (!resourceAvailable) {
+            booking.deny();
+            return false;
+        }
+        return false; 
     }
 }
